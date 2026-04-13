@@ -3,104 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>東洋館出版社 - 書籍QRコード生成ツール（印刷用）</title>
+    <title>東洋館出版社 - 書籍二次元コード生成ツール（印刷用）</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.4.4/qrcode.min.js"></script>
     <style>
+        /* Typography & Visual Theme */
         body {
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
+            /* 指定のフォントフォールバックとタイポグラフィ設定 */
+            font-family: noto-sans, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, arial, sans-serif;
+            background-color: #f8f6f2; /* Background: 温かみのあるオフホワイト */
+            color: #0f0f0f; /* Text Primary */
+            line-height: 1.5;
+            letter-spacing: -0.4px;
+            font-feature-settings: "liga";
+            word-break: break-all;
+            overflow-wrap: break-word;
+            line-break: strict;
+            
+            /* レイアウト調整用 */
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 16px;
+            box-sizing: border-box;
         }
+
+        /* Cards Component */
         .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background-color: #fff; /* Surface */
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 24px 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08); /* Level 1 Elevation */
             width: 100%;
             max-width: 450px;
             text-align: center;
+            box-sizing: border-box;
         }
-        h2 { margin-top: 0; font-size: 1.2rem; color: #444; }
+
+        /* Headings */
+        h2 { 
+            margin-top: 0; 
+            margin-bottom: 8px;
+            font-size: 18px; /* Heading 1 */
+            font-weight: 600; /* 見出しは600で統一 */
+            color: #0f0f0f; 
+        }
+        .subtitle {
+            font-size: 12px; /* Caption */
+            color: #757575; /* Text Secondary */
+            display: block;
+            margin-bottom: 24px;
+        }
+
+        .instruction {
+            font-size: 14px; /* Label */
+            font-weight: 600;
+            color: #0f0f0f;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+        
+        /* Inputs */
         input[type="text"] {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1.2rem;
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            height: 40px;
             text-align: center;
             letter-spacing: 2px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: inherit;
         }
+        input[type="text"]:focus {
+            border-color: #f28c06; /* Focus時の枠線 */
+        }
+
+        /* Buttons Component */
         button {
             width: 100%;
-            padding: 12px;
-            background-color: #0056b3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: bold;
+            padding: 8px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
             transition: background-color 0.2s;
-            margin-bottom: 10px;
+            font-family: inherit;
+            letter-spacing: -0.4px;
+            box-sizing: border-box;
+            min-height: 44px; /* タッチターゲット（WCAG基準） */
         }
-        button:hover { background-color: #004494; }
-        .download-btn {
-            background-color: #28a745;
+        
+        /* Primary Button */
+        .btn-primary {
+            background-color: #f28c06; /* Cookpad Orange */
+            color: #fff;
+            border: none;
+            margin-top: 8px;
+        }
+        .btn-primary:hover { 
+            background-color: #d97a00; /* Cookpad Orange Dark */
+        }
+
+        /* Secondary Button (Download) */
+        .btn-secondary {
+            background-color: transparent;
+            color: #0f0f0f;
+            border: 1px solid #e0e0e0;
+            margin-top: 16px;
             display: none; /* 初期状態は非表示 */
         }
-        .download-btn:hover { background-color: #218838; }
-        .error-msg {
-            color: #d9534f;
-            font-size: 0.85rem;
-            margin-bottom: 10px;
-            height: 1em;
-            font-weight: bold;
+        .btn-secondary:hover {
+            background-color: #f8f6f2; 
         }
+
+        /* Semantic Colors */
+        .error-msg {
+            color: #e53935; /* Danger */
+            font-size: 12px; /* Caption */
+            min-height: 18px;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+
         #qrcode-container {
-            margin-top: 20px;
+            margin-top: 24px;
             display: flex;
             justify-content: center;
         }
-        /* 画面表示用のサイズ調整（実際の画像データは大きいです） */
         #qrcode-container img {
             width: 200px;
             height: 200px;
-            border: 1px solid #eee;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
         }
+
         .url-display {
-            margin-top: 15px;
-            margin-bottom: 20px;
-            font-size: 0.85rem;
-            color: #666;
+            margin-top: 16px;
+            font-size: 12px; /* Caption */
+            color: #757575; /* Text Secondary */
             word-break: break-all;
+        }
+        .url-display a {
+            color: #f28c06;
+            text-decoration: none;
+        }
+        .url-display a:hover {
+            text-decoration: underline;
+        }
+
+        /* Link wrapper for download button */
+        #downloadLink {
+            text-decoration: none;
+            display: block;
+            width: 100%;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 32px;
+            font-size: 12px;
+            color: #757575;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>書籍QRコード生成ツール<br><span style="font-size: 0.8rem; color: #888;">(印刷・DTP用高解像度版)</span></h2>
+        <h2>書籍二次元コード生成ツール</h2>
+        <span class="subtitle">(東洋館出版社EC専用)</span>
         
-        <p style="font-size: 0.9rem; color: #555;">4桁のSKUを入力してください</p>
-        
+        <div class="instruction">4桁のSKUを入力</div>
         <input type="text" id="skuInput" placeholder="例: 1234" maxlength="4">
         <div id="errorMsg" class="error-msg"></div>
         
-        <button onclick="generateQRCode()">QRコードを作成</button>
+        <button class="btn-primary" onclick="generateQRCode()">QRコードを作成</button>
         
         <div id="urlDisplay" class="url-display"></div>
         <div id="qrcode-container"></div>
         
         <a id="downloadLink" href="#" download="qrcode.png">
-            <button id="downloadBtn" class="download-btn">画像をダウンロード (PNG)</button>
+            <button id="downloadBtn" class="btn-secondary">画像をダウンロード (PNG)</button>
         </a>
     </div>
+
+    <footer>
+        &copy; 2026 ISHIKAWA Natsuki
+    </footer>
 
     <script>
         function generateQRCode() {
@@ -127,19 +225,19 @@
 
             // 印刷用QRコードの設定
             const opts = {
-                errorCorrectionLevel: 'H', // 誤り訂正レベル最高
-                margin: 1,                 // 周辺の余白を1ブロック分に指定
-                scale: 40,                 // 生成される画像のピクセル数を極端に大きくする
+                errorCorrectionLevel: 'H', 
+                margin: 1,                 
+                scale: 40,                 
                 color: {
-                    dark: '#000000',       // モノクロ2階調（黒）
-                    light: '#ffffff'       // モノクロ2階調（白）
+                    dark: '#000000',       
+                    light: '#ffffff'       
                 }
             };
 
             // QRコードをDataURL(PNG形式)として生成
             QRCode.toDataURL(targetUrl, opts, function (err, url) {
                 if (err) {
-                    errorMsg.textContent = "QRコードの生成に失敗しました。";
+                    errorMsg.textContent = "二次元コードの生成に失敗しました。";
                     console.error(err);
                     return;
                 }
@@ -154,7 +252,7 @@
 
                 // ダウンロードボタンのリンク先に設定して表示
                 downloadLink.href = url;
-                downloadLink.download = `QR_SKU${sku}.png`; // ファイル名をSKU番号に自動設定
+                downloadLink.download = `QR_SKU${sku}.png`; 
                 downloadBtn.style.display = "block";
             });
         }
