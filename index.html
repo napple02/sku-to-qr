@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>東洋館出版社 - 書籍QRコード生成ツール</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <title>東洋館出版社 - 書籍QRコード生成ツール（印刷用）</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-            background-color: #f9f9f9;
+            background-color: #f4f7f6;
             color: #333;
             display: flex;
             justify-content: center;
@@ -22,22 +22,19 @@
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             text-align: center;
         }
-        h2 {
-            margin-top: 0;
-            font-size: 1.2rem;
-            color: #444;
-        }
+        h2 { margin-top: 0; font-size: 1.2rem; color: #444; }
         input[type="text"] {
             width: calc(100% - 22px);
             padding: 10px;
             margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 1rem;
+            font-size: 1.2rem;
             text-align: center;
+            letter-spacing: 2px;
         }
         button {
             width: 100%;
@@ -47,26 +44,38 @@
             border: none;
             border-radius: 4px;
             font-size: 1rem;
+            font-weight: bold;
             cursor: pointer;
             transition: background-color 0.2s;
+            margin-bottom: 10px;
         }
-        button:hover {
-            background-color: #004494;
+        button:hover { background-color: #004494; }
+        .download-btn {
+            background-color: #28a745;
+            display: none; /* 初期状態は非表示 */
         }
+        .download-btn:hover { background-color: #218838; }
         .error-msg {
             color: #d9534f;
             font-size: 0.85rem;
             margin-bottom: 10px;
             height: 1em;
+            font-weight: bold;
         }
-        #qrcode {
+        #qrcode-container {
             margin-top: 20px;
             display: flex;
             justify-content: center;
-            min-height: 150px;
+        }
+        /* 画面表示用のサイズ調整（実際の画像データはもっと大きいです） */
+        #qrcode-container img {
+            width: 200px;
+            height: 200px;
+            border: 1px solid #eee;
         }
         .url-display {
             margin-top: 15px;
+            margin-bottom: 20px;
             font-size: 0.85rem;
             color: #666;
             word-break: break-all;
@@ -76,53 +85,78 @@
 <body>
 
     <div class="container">
-        <h2>書籍QRコード生成ツール</h2>
+        <h2>書籍QRコード生成ツール<br><span style="font-size: 0.8rem; color: #888;">(印刷・DTP用高解像度版)</span></h2>
         
         <p style="font-size: 0.9rem; color: #555;">4桁のSKUを入力してください</p>
         
         <input type="text" id="skuInput" placeholder="例: 1234" maxlength="4">
-        
         <div id="errorMsg" class="error-msg"></div>
         
         <button onclick="generateQRCode()">QRコードを作成</button>
-
-        <div id="qrcode"></div>
+        
         <div id="urlDisplay" class="url-display"></div>
+        <div id="qrcode-container"></div>
+        
+        <a id="downloadLink" href="#" download="qrcode.png">
+            <button id="downloadBtn" class="download-btn">画像をダウンロード (PNG)</button>
+        </a>
     </div>
 
     <script>
         function generateQRCode() {
             const sku = document.getElementById("skuInput").value;
             const errorMsg = document.getElementById("errorMsg");
-            const qrcodeContainer = document.getElementById("qrcode");
+            const qrcodeContainer = document.getElementById("qrcode-container");
             const urlDisplay = document.getElementById("urlDisplay");
+            const downloadLink = document.getElementById("downloadLink");
+            const downloadBtn = document.getElementById("downloadBtn");
 
             // 初期化
             errorMsg.textContent = "";
             urlDisplay.textContent = "";
-            qrcodeContainer.innerHTML = ""; // 以前のQRコードを消去
+            qrcodeContainer.innerHTML = ""; 
+            downloadBtn.style.display = "none";
 
-            // バリデーション：4桁の半角数字かチェック
+            // バリデーション
             if (!/^\d{4}$/.test(sku)) {
                 errorMsg.textContent = "※4桁の半角数字を正しく入力してください。";
                 return;
             }
 
-            // URLの組み立て
             const targetUrl = "https://www.toyokan.co.jp/products/" + sku;
 
-            // QRコードの生成
-            new QRCode(qrcodeContainer, {
-                text: targetUrl,
-                width: 150,
-                height: 150,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H // 誤り訂正レベル高（少し汚れがあっても読み取れる）
-            });
+            // 印刷用QRコードの設定
+            const opts = {
+                errorCorrectionLevel: 'H', // 誤り訂正レベル最高（一部が隠れても読み取れる）
+                margin: 1,                 // 周辺の余白を1ブロック分に指定
+                scale: 40,                 // 生成される画像のピクセル数を極端に大きくする（350dpiでの印刷に耐えるため）
+                color: {
+                    dark: '#000000',       // モノクロ2階調（黒）
+                    light: '#ffffff'       // モノクロ2階調（白）
+                }
+            };
 
-            // 確認用URLテキストの表示
-            urlDisplay.innerHTML = `リンク先: <br><a href="${targetUrl}" target="_blank">${targetUrl}</a>`;
+            // QRコードをDataURL(PNG形式)として生成
+            QRCode.toDataURL(targetUrl, opts, function (err, url) {
+                if (err) {
+                    errorMsg.textContent = "QRコードの生成に失敗しました。";
+                    console.error(err);
+                    return;
+                }
+
+                // 画面に画像を表示
+                const img = document.createElement('img');
+                img.src = url;
+                qrcodeContainer.appendChild(img);
+
+                // 確認用URLを表示
+                urlDisplay.innerHTML = `リンク先: <br><a href="${targetUrl}" target="_blank">${targetUrl}</a>`;
+
+                // ダウンロードボタンのリンク先に設定して表示
+                downloadLink.href = url;
+                downloadLink.download = `QR_SKU${sku}.png`; // ファイル名をSKU番号に自動設定
+                downloadBtn.style.display = "block";
+            });
         }
     </script>
 </body>
