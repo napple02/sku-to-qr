@@ -10,7 +10,7 @@ https://edi-tool.github.io/sku-to-qr/
 （機密情報など含まないので公開していますが、）社内での利用を想定しています。
 
 ## 使用技術
-- **JavaScript Library**: [node-qrcode](https://github.com/soldair/node-qrcode) (v1.4.4 via cdnjs)
+- **JavaScript Library**: [node-qrcode](https://github.com/soldair/node-qrcode) (v1.4.4 / MIT License / `qrcode.min.js` としてリポジトリ内にバンドル)
 - **Languages**: HTML5, CSS3, JavaScript (ES6+)
 
 ## 仕様

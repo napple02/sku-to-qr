@@ -11,9 +11,10 @@ sitemap: false
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="favicon.png" type="image/png">
     <title>QRコードさん</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.4.4/qrcode.min.js"></script>
+    <script src="qrcode.min.js"></script>
     <style>
         /* Typography & Visual Theme */
         body {
@@ -201,8 +202,8 @@ sitemap: false
         <span class="subtitle">(東洋館EC用-書籍QRコード作成ツール)</span>
         
         <div class="instruction">4桁のSKUを入力</div>
-        <input type="text" id="skuInput" placeholder="例: 1234" maxlength="4">
-        <div id="errorMsg" class="error-msg"></div>
+        <input type="text" id="skuInput" aria-label="SKU番号（4桁）" placeholder="例: 1234" maxlength="4">
+        <div id="errorMsg" class="error-msg" role="alert" aria-live="polite"></div>
         
         <button class="btn-primary" onclick="generateQRCode()">QRコードを作成</button>
         
@@ -264,6 +265,7 @@ sitemap: false
                 // 画面に画像を表示
                 const img = document.createElement('img');
                 img.src = url;
+                img.alt = `SKU ${sku} の二次元コード`;
                 qrcodeContainer.appendChild(img);
 
                 // 確認用URLを表示
